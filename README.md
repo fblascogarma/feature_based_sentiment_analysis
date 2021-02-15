@@ -1,0 +1,2 @@
+# feature_based_sentiment_analysis
+Feature-Based Sentiment Analysis, also known as Aspect-Based Sentiment Analysis, is an advanced text analysis technique of customer feedback data to learn more about your customers and/or your competitors' customers. This analysis tells you which features are the ones people are talking the most and if the sentiment towards each feature is positive or negative. It is a powerful tool for Product Managers, Product Marketing Managers, and entrepreneurs.
