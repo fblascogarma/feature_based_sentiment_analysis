@@ -14,7 +14,7 @@ Feature-Based Sentiment Analysis, also known as [Aspect-Based Sentiment Analysis
 
 ## About this project
 
-This project aims to analyze customer reviews of Alexa products, but it can be used to analyze other sources like social media posts, user reviews on Play Store & App Store, and internal customer feedback data like CSAT or NPS responses.
+This project aims to analyze customer reviews of Alexa products using NLP and ML in Python, but it can be used to analyze other sources like social media posts, user reviews on Play Store & App Store, and internal customer feedback data like CSAT or NPS responses.
 I got the dataset from [Kaggle](https://www.kaggle.com/sid321axn/amazon-alexa-reviews) and did some changes so it is more versatile and you can use it for multiple products/apps. The dataset is on reviews.csv file and after running absa.py the program will create an Excel file called Alexa.xlsx. 
 We are using a small dataset of 3.150 reviews but you can use a much larger one.
 
