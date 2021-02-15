@@ -42,3 +42,4 @@ Go from a high-level first analysis to a more detailed analysis.
 3) [Implementing Aspect Based Sentiment Analysis using Python](https://medium.com/analytics-vidhya/aspect-based-sentiment-analysis-a-practical-approach-8f51029bbc4a)
 4) [Lowri Williams' GitHub](https://github.com/LowriWilliams/Aspect_Sentiment_Analysis)
 5) [Sentiment Analysis: Aspect-Based Opinion Mining](https://towardsdatascience.com/%EF%B8%8F-sentiment-analysis-aspect-based-opinion-mining-72a75e8c8a6d) 
+6) [Rule-based Sentiment Analysis of App Store Review in Python](https://towardsdatascience.com/rule-based-sentiment-analysis-of-app-store-review-in-python-94d8bbfc48bb)
