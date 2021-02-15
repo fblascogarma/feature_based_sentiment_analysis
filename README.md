@@ -10,7 +10,9 @@ Feature-Based Sentiment Analysis, also known as [Aspect-Based Sentiment Analysis
 4) Learn how people are responding to a new important update or new feature release.
 5) It will help you build your product competitive matrix and segment customers.
 6) Learn how a new marketing campaign is resonating with your target customers.
-7) Learn about a new market entry opportunity.
+7) Help you determine the marketing strategy of a new product launch.
+8) Also helpful to decide how to position your product to different segments.
+9) Learn about a new market entry opportunity.
 
 ## About this project
 
