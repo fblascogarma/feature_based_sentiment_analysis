@@ -26,7 +26,7 @@ We are using a small dataset of 3.150 reviews but you can use a much larger one.
 2) Go to your terminal and type: pip install -r requirements.txt
 This will install all necessary libraries such as nltk (natural language toolkit) and scikit-learn (ML library). Make sure you are in a virtual environment before installing the requirement packages. If you don't understand what a virtual environment is, read the explanation at the end of this file.
 3) Check that your data structure is similar to the one provided in this project called reviews.csv. If not, make necessary changes.
-4) Open the absa.py file in your IDE and follow the steps. The most important one are app_name, aspects_no, and reviews_name_col. 
+4) Open the absa.py file in your IDE and follow the steps. You will need to complete the settings to match your data, which are app_name, aspects_no, and reviews_name_col. 
 5) Run the absa.py file typing in your terminal: py absa.py
 6) Go to your folder and open the Excel file with the name of your product/app to get insights from your analysis. Make sure you assign correctly the feature keywords with the dominant topics extracted with this technique (sheet name Topics_key).
 
@@ -54,4 +54,3 @@ To create a virtual environment in Python 3 and using VS Code as your IDE, write
 py -3 -m venv name_of_project
 And to activate the virtual environment type
 name_of_project\Scripts\activate
-
