@@ -24,7 +24,7 @@ We are using a small dataset of 3.150 reviews but you can use a much larger one.
 
 1) Install all files that are in demo_gh folder to your project's folder: stop_words_list.py, absa.py, requirements.txt, and reviews.csv. Do not install Alexa.xlsx to your project folder because I provided this file only so you can see how the output file should look like.
 2) Go to your terminal and type: pip install -r requirements.txt
-This will install all necessary libraries such as nltk (natural language toolkit) and scikit-learn (ML library). Make sure you are in a virtual environment before installing the requirement packages.
+This will install all necessary libraries such as nltk (natural language toolkit) and scikit-learn (ML library). Make sure you are in a virtual environment before installing the requirement packages. If you don't understand what a virtual environment is, read the explanation at the end of this file.
 3) Check that your data structure is similar to the one provided in this project called reviews.csv. If not, make necessary changes.
 4) Open the absa.py file in your IDE and follow the steps. The most important one are app_name, aspects_no, and reviews_name_col. 
 5) Run the absa.py file typing in your terminal: py absa.py
@@ -45,3 +45,13 @@ Go from a high-level first analysis to a more detailed analysis.
 4) [Lowri Williams' GitHub](https://github.com/LowriWilliams/Aspect_Sentiment_Analysis)
 5) [Sentiment Analysis: Aspect-Based Opinion Mining](https://towardsdatascience.com/%EF%B8%8F-sentiment-analysis-aspect-based-opinion-mining-72a75e8c8a6d) 
 6) [Rule-based Sentiment Analysis of App Store Review in Python](https://towardsdatascience.com/rule-based-sentiment-analysis-of-app-store-review-in-python-94d8bbfc48bb)
+
+## Why do we need to create a virtual environment
+
+The virtual environment is something you create when you start a project. It's always advisable to create a virtual environment for your new project so the libraries you install there don't conflict with your other projects that might demand other versions of the libraries. For example, I am using vaderSentiment version 3.3.2 for this project, but for another project, I might need vaderSentiment version 3.2.5.
+
+To create a virtual environment in Python 3 and using VS Code as your IDE, write this in the terminal:
+py -3 -m venv name_of_project
+And to activate the virtual environment type
+name_of_project\Scripts\activate
+
