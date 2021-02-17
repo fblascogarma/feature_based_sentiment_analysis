@@ -52,5 +52,8 @@ The virtual environment is something you create when you start a project. It's a
 
 To create a virtual environment in Python 3 and using VS Code as your IDE, write this in the terminal:
 py -3 -m venv name_of_project
+In my case, the name_of_project is demo_gh
+Go to the folder that contains the virtual environment folder
 And to activate the virtual environment type
 name_of_project\Scripts\activate
+You will see in parenthesis (name_of_project) before the path if you successfully activated the virtual environment.
