@@ -1,11 +1,11 @@
 import pandas as pd
 import numpy as np
-import nltk                                                     # natural language toolkit (suite of libraries and programs for NLP)
+import nltk                                                             # natural language toolkit (suite of libraries and programs for NLP)
 from nltk.corpus import stopwords, sentiwordnet as swn
 from nltk.stem import WordNetLemmatizer
-from sklearn.feature_extraction.text import CountVectorizer     # ML library
+from sklearn.feature_extraction.text import CountVectorizer             # ML library
 from sklearn.decomposition import LatentDirichletAllocation
-from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer    # rule-based sentiment analysis tool
 from stop_words_list import stop_words_list
 import xlsxwriter
 
@@ -17,6 +17,10 @@ df_reviews = pd.read_csv("./reviews.csv", encoding="utf-8")     # this file cont
 app_name = "Alexa"                                                                                  # the name of the app or product you want to analyze
 aspects_no = 5                                                                                      # number of features you want the algorithm to extract
 reviews_name_col = 'verified_reviews'                                                               # name of the column that has the app reviews in your file
+language_of_reviews = 'english'                                                                     # set the languague of your reviews (check list of 21 options down below)
+language_of_reviews_list = {'english', 'spanish', 'portuguese', 'french', 'german',
+                            'arabic', 'azerbaijani', 'danish', 'dutch', 'finnish', 'greek', 'hungarian',
+                            'indonesian', 'italian', 'kazakh', 'nepali', 'norwegian', 'romanian', 'russian', 'slovene'}
 
 ## Start the aspect-based sentiment analysis
 
@@ -59,7 +63,7 @@ df_reelgood['tokenise'] = df_reelgood.apply(lambda row: nltk.word_tokenize(row[1
 #print(df_reelgood.head())
 
 # 5. Initiate stopwords from nltk, add additional missing terms, and remove stopwords
-stop_words = stopwords.words('english')
+stop_words = stopwords.words(language_of_reviews)                       # there are 21 languages to use and you can check the options going to C:/Users/username/AppData/Roming/nltk_data/corpora/stopwords
 stop_words.extend(stop_words_list)                                      # to increase the stop_words list with the words we included in our file with that name
 df_reelgood['remove_stopwords'] = df_reelgood['tokenise'].apply(lambda x: [item for item in x if item not in stop_words])
 #print("step 5: ", df_reelgood.head())
