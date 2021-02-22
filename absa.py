@@ -89,7 +89,7 @@ df_reelgood_document_topic = pd.DataFrame(np.round(lda_output, 2), columns = top
 
 # 9. Get dominant topic for each document and join to original df
 dominant_topic = (np.argmax(df_reelgood_document_topic.values, axis=1)+1)
-df_reelgood_document_topic['Dominant_topic'] = dominant_topi
+df_reelgood_document_topic['Dominant_topic'] = dominant_topic
 
 df_reelgood = df_reelgood.reset_index()             # reset index to do a proper merge between the 2 df
 df_reelgood = pd.merge(df_reelgood, df_reelgood_document_topic, left_index = True, right_index = True, how = 'outer')
