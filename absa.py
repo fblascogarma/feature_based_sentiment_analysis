@@ -10,7 +10,7 @@ from stop_words_list import stop_words_list
 import xlsxwriter
 
 ## Read data
-df_reviews = pd.read_csv("./reviews.csv", encoding="utf-8")     # this file contains reviews for all my major competitors (used SearchMan API)
+df_reviews = pd.read_csv("./reviews.csv", encoding="utf-8")     # this file contains reviews I want to analyze
 
 ## Settings to match your data
 
