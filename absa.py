@@ -15,9 +15,9 @@ df_reviews = pd.read_csv("./reviews.csv", encoding="utf-8")     # this file cont
 ## Settings to match your data
 
 app_name = "Alexa"                                                                                  # the name of the app or product you want to analyze
-aspects_no = 5                                                                                      # number of features you want the algorithm to extract
+aspects_no = 5                                                                                      # number of features you want to analyze
 reviews_name_col = 'verified_reviews'                                                               # name of the column that has the app reviews in your file
-language_of_reviews = 'english'                                                                     # set the languague of your reviews (check list of 21 options down below)
+language_of_reviews = 'english'                                                                     # set the languague of your reviews (check list of 20 options down below)
 language_of_reviews_list = {'english', 'spanish', 'portuguese', 'french', 'german',
                             'arabic', 'azerbaijani', 'danish', 'dutch', 'finnish', 'greek', 'hungarian',
                             'indonesian', 'italian', 'kazakh', 'nepali', 'norwegian', 'romanian', 'russian', 'slovene'}
@@ -132,10 +132,32 @@ all_topics = pd.DataFrame(all_topics, columns=['Dominant_topic', 'topic_name'])
 
 # 12. Results
 results = df_reelgood.groupby(['Dominant_topic', 'sentiment']).count().reset_index()
+sent_table = pd.pivot_table(results, index=["sentiment"],
+                            values = ["sentiment score"],
+                            aggfunc = [np.sum], fill_value = 0)
+sent_table['Sentiment Score (%)'] = round(sent_table / sent_table.sum() * 100)
+sent_table.loc['Total Reviews'] = sent_table.sum()
 
 # 13. Export data to an Excel file
 
 writer = pd.ExcelWriter(app_name+'.xlsx', engine='xlsxwriter')      # create a pandas Excel writer using XlsxWriter as the engine
+
+sent_table.to_excel(writer, sheet_name= 'SentimentAnalysis')
+# create a column chart showing the sentiment analysis (then we will do the chart for the aspect-based)
+workbook = writer.book                                              # access the XlsxWriter workbook and worksheet objects from the dataframe
+worksheet = writer.sheets['SentimentAnalysis']
+chart = workbook.add_chart({'type': 'column'})
+chart.add_series({
+    'categories': '=SentimentAnalysis!$A$4:$A$6',
+    'values': '=SentimentAnalysis!$C$4:$C$6',
+    'data_labels': {'value': True},
+})
+chart.set_title({'name': 'Sentiment Analysis (%)'})                     # title of chart
+chart.set_legend({'none': True})
+chart.set_x_axis({'major_gridlines': {'visible': False},})
+chart.set_y_axis({'major_gridlines': {'visible': False},})
+worksheet.insert_chart('A9', chart)
+
 results.to_excel(writer, sheet_name = 'Results')                    
 df_reelgood.to_excel(writer, sheet_name = 'Reviews')
 all_topics.to_excel(writer, sheet_name = 'Topics_key')
