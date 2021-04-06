@@ -129,14 +129,28 @@ for i in tmp['topic'].unique():
     all_topics.append(tmp_2)
 
 all_topics = pd.DataFrame(all_topics, columns=['Dominant_topic', 'topic_name'])
+all_topics['Dominant_topic'] = pd.to_numeric(all_topics['Dominant_topic'].str[5])
+all_topics['topic_name'] = all_topics['topic_name'].astype(str)                     # convert the list into a string type to create a pivot table later
+all_topics['topic_name'] = all_topics['topic_name'].str.split('[').str[1]
+all_topics['topic_name'] = all_topics['topic_name'].str.split(']').str[0]           # this and previous line is to get the string between the [ ] symbols
 
 # 12. Results
 results = df_reelgood.groupby(['Dominant_topic', 'sentiment']).count().reset_index()
-sent_table = pd.pivot_table(results, index=["sentiment"],
+results = pd.merge(results, all_topics, on='Dominant_topic', how='inner')
+sent_table = pd.pivot_table(results, index = ["sentiment"],
                             values = ["sentiment score"],
-                            aggfunc = [np.sum], fill_value = 0)
+                            aggfunc = [np.sum],
+                            margins = False)
 sent_table['Sentiment Score (%)'] = round(sent_table / sent_table.sum() * 100)
 sent_table.loc['Total Reviews'] = sent_table.sum()
+
+aspect_based_table = pd.pivot_table(results, index = ["sentiment"], columns = ['topic_name'],
+                                    values = ["sentiment score"],
+                                    aggfunc = [np.sum],
+                                    margins = True, margins_name = "Total")
+# aspect_based_table['Sentiment Score (%)'] = round(aspect_based_table / aspect_based_table.sum() * 100)
+# aspect_based_table.loc['Total Reviews'] = aspect_based_table.sum()
+
 
 # 13. Export data to an Excel file
 
@@ -158,6 +172,7 @@ chart.set_x_axis({'major_gridlines': {'visible': False},})
 chart.set_y_axis({'major_gridlines': {'visible': False},})
 worksheet.insert_chart('A9', chart)
 
+aspect_based_table.to_excel(writer, sheet_name = 'Aspect-based SentAnalysis')
 results.to_excel(writer, sheet_name = 'Results')                    
 df_reelgood.to_excel(writer, sheet_name = 'Reviews')
 all_topics.to_excel(writer, sheet_name = 'Topics_key')
