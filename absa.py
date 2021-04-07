@@ -15,7 +15,7 @@ df_reviews = pd.read_csv("./reviews.csv", encoding="utf-8")     # this file cont
 ## Settings to match your data
 
 app_name = "Alexa"                                                                                  # the name of the app or product you want to analyze
-aspects_no = 5                                                                                      # number of features you want to analyze
+features = 5                                                                                      # number of features you want to analyze
 reviews_name_col = 'verified_reviews'                                                               # name of the column that has the app reviews in your file
 language_of_reviews = 'english'                                                                     # set the languague of your reviews (check list of 20 options down below)
 language_of_reviews_list = {'english', 'spanish', 'portuguese', 'french', 'german',
@@ -75,7 +75,7 @@ for index, row in df_reelgood.iterrows():
 vectorised = vectorizer.fit_transform(vectors)
 
 # 8. Initisalize LDA model and make the df
-lda_model = LatentDirichletAllocation(n_components = aspects_no,            # number of topics; default = 10
+lda_model = LatentDirichletAllocation(n_components = features,            # number of topics; default = 10
                                     random_state = 10,
                                     evaluate_every = -1,                    # compute perplexity every n iters you want, but for practicality you don't need to as doing so will increase the training time
                                     n_jobs = -1,                            # use all available CPUs
@@ -137,43 +137,92 @@ all_topics['topic_name'] = all_topics['topic_name'].str.split(']').str[0]       
 # 12. Results
 results = df_reelgood.groupby(['Dominant_topic', 'sentiment']).count().reset_index()
 results = pd.merge(results, all_topics, on='Dominant_topic', how='inner')
-sent_table = pd.pivot_table(results, index = ["sentiment"],
-                            values = ["sentiment score"],
-                            aggfunc = [np.sum],
-                            margins = False)
-sent_table['Sentiment Score (%)'] = round(sent_table / sent_table.sum() * 100)
-sent_table.loc['Total Reviews'] = sent_table.sum()
 
-aspect_based_table = pd.pivot_table(results, index = ["sentiment"], columns = ['topic_name'],
-                                    values = ["sentiment score"],
-                                    aggfunc = [np.sum],
-                                    margins = True, margins_name = "Total")
-# aspect_based_table['Sentiment Score (%)'] = round(aspect_based_table / aspect_based_table.sum() * 100)
-# aspect_based_table.loc['Total Reviews'] = aspect_based_table.sum()
+# table in nominal values
+aspect_based_table_val = pd.crosstab(results.sentiment,                 # index
+                                results.topic_name,                     # columns
+                                values = results.reviews,
+                                aggfunc = np.sum,
+                                margins = True,
+                                margins_name = 'Total')
 
+# table in percentage values
+aspect_based_table_pct = pd.crosstab(results.sentiment,                 # index
+                                results.topic_name,                     # columns
+                                values = results.reviews,
+                                aggfunc = np.sum,
+                                margins = True,
+                                margins_name = 'Total',
+                                normalize = 'columns')                  # to calculate the percentage over each column
 
-# 13. Export data to an Excel file
+# 13. Prepare data and export data to an Excel file
 
 writer = pd.ExcelWriter(app_name+'.xlsx', engine='xlsxwriter')      # create a pandas Excel writer using XlsxWriter as the engine
-
-sent_table.to_excel(writer, sheet_name= 'SentimentAnalysis')
-# create a column chart showing the sentiment analysis (then we will do the chart for the aspect-based)
 workbook = writer.book                                              # access the XlsxWriter workbook and worksheet objects from the dataframe
-worksheet = writer.sheets['SentimentAnalysis']
-chart = workbook.add_chart({'type': 'column'})
-chart.add_series({
-    'categories': '=SentimentAnalysis!$A$4:$A$6',
-    'values': '=SentimentAnalysis!$C$4:$C$6',
-    'data_labels': {'value': True},
-})
-chart.set_title({'name': 'Sentiment Analysis (%)'})                     # title of chart
-chart.set_legend({'none': True})
-chart.set_x_axis({'major_gridlines': {'visible': False},})
-chart.set_y_axis({'major_gridlines': {'visible': False},})
-worksheet.insert_chart('A9', chart)
+format1 = workbook.add_format({'num_format': '#,##0'})              # format numbers for df output
+format2 = workbook.add_format({'num_format': '0%'})                 # format percentages for df output
+center = workbook.add_format({'align': 'center'})                   # format cells to be aligned to the center
 
-aspect_based_table.to_excel(writer, sheet_name = 'Aspect-based SentAnalysis')
-results.to_excel(writer, sheet_name = 'Results')                    
+aspect_based_table_pct.to_excel(writer, sheet_name = 'Analysis', startrow = 1, startcol = 1)        # data in percentages
+aspect_based_table_val.to_excel(writer, sheet_name = 'Analysis', startrow = 6, startcol = 1)        # data in nominal values
+worksheet_absa = writer.sheets['Analysis']
+worksheet_absa.set_column('B:J', 13, center)
+worksheet_absa.conditional_format('C8:J11', {
+    'type': 'cell',
+    'criteria': 'greater than or equal to',
+    'value':    0,
+    'format': format1
+})
+worksheet_absa.conditional_format('C3:J5', {
+    'type': 'cell',
+    'criteria': 'greater than or equal to',
+    'value':    0,
+    'format': format2
+})
+
+chart_sent = workbook.add_chart({'type': 'column'})             # chart showing sentiment analysis results
+chart_sent.add_series({
+    'categories': ['Analysis', 2, 1, 4, 1],                     # [sheetname, first_row, first_col, last_row, last_col]
+    'values': ['Analysis', 2, features+2, 4, features+2],       # using features variable so it changes depending on how many features the user selects
+    'data_labels': {'value': True, 'num_format': '0%'},
+    'gap': 20,
+})
+chart_sent.set_title({'name': 'Sentiment Analysis (%)'})                     
+chart_sent.set_legend({'none': True})
+chart_sent.set_x_axis({'major_gridlines': {'visible': False},})
+chart_sent.set_y_axis({'major_gridlines': {'visible': False}, 'visible': False})
+worksheet_absa.insert_chart('B13', chart_sent)
+
+chart_absa = workbook.add_chart({'type': 'column'})             # chart showing sentiment analysis results
+# create 3 series for each sentiment
+chart_absa.add_series({
+    'categories': ['Analysis', 1, 2, 1, 1+features],                     # [sheetname, first_row, first_col, last_row, last_col] # aspect
+    'values': ['Analysis', 2, 2, 2, 1+features],
+    'name': 'Negative',
+    'data_labels': {'value': True, 'num_format': '0%'},
+    'gap': 20,
+})
+chart_absa.add_series({
+    'categories': ['Analysis', 1, 2, 1, 1+features],                     
+    'values': ['Analysis', 3, 2, 3, 1+features],
+    'name': 'Neutral',
+    'data_labels': {'value': True, 'num_format': '0%'},
+    'gap': 20,
+})
+chart_absa.add_series({
+    'categories': ['Analysis', 1, 2, 1, 1+features],                     
+    'values': ['Analysis', 4, 2, 4, 1+features],
+    'name': 'Positive',
+    'data_labels': {'value': True, 'num_format': '0%'},
+    'gap': 20,
+})
+
+chart_absa.set_title({'name': 'Aspect-Based Sentiment Analysis (%)'})                     
+chart_absa.set_legend({'position': 'bottom'})
+chart_absa.set_x_axis({'major_gridlines': {'visible': False},})
+chart_absa.set_y_axis({'major_gridlines': {'visible': False}, 'visible': False})
+chart_absa.set_size({'width': 1080, 'height': 288})
+worksheet_absa.insert_chart('B28', chart_absa)
+                 
 df_reelgood.to_excel(writer, sheet_name = 'Reviews')
-all_topics.to_excel(writer, sheet_name = 'Topics_key')
 writer.save()                                                       # close the pandas Excel writer and output the Excel file
