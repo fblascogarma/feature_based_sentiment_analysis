@@ -15,7 +15,7 @@ df_reviews = pd.read_csv("./reviews.csv", encoding="utf-8")     # this file cont
 ## Settings to match your data
 
 app_name = "Alexa"                                                                                  # the name of the app or product you want to analyze
-features = 5                                                                                      # number of features you want to analyze
+features = 5                                                                                        # number of features you want to analyze
 reviews_name_col = 'verified_reviews'                                                               # name of the column that has the app reviews in your file
 language_of_reviews = 'english'                                                                     # set the languague of your reviews (check list of 20 options down below)
 language_of_reviews_list = {'english', 'spanish', 'portuguese', 'french', 'german',
@@ -25,13 +25,13 @@ language_of_reviews_list = {'english', 'spanish', 'portuguese', 'french', 'germa
 ## Start the aspect-based sentiment analysis
 
 # 1. Create a df
-df_reelgood = df_reviews[df_reviews['App_Name']==app_name]
-df_reelgood = pd.DataFrame({
-    'reviews': df_reelgood[reviews_name_col]                           
+df_reviews = df_reviews[df_reviews['App_Name']==app_name]
+df_reviews = pd.DataFrame({
+    'reviews': df_reviews[reviews_name_col]                           
 })
 
 # 2. Convert the text to lowercase and remove punctuation and white space
-df_reelgood['remove_lower_punct'] = df_reelgood['reviews'].str.lower().str.replace("'", '', regex=True).str.replace('[^\w\s]', ' ', regex=True).str.replace(" \d+", " ", regex=True).str.replace(' +', ' ', regex=True).str.strip()
+df_reviews['remove_lower_punct'] = df_reviews['reviews'].str.lower().str.replace("'", '', regex=True).str.replace('[^\w\s]', ' ', regex=True).str.replace(" \d+", " ", regex=True).str.replace(' +', ' ', regex=True).str.strip()
 
 # 3. Apply sentiment analysis using VADER
 analyser = SentimentIntensityAnalyzer()                         # this is a rule-based sentiment analysis tool for social media
@@ -39,7 +39,7 @@ analyser = SentimentIntensityAnalyzer()                         # this is a rule
 sentiment_score_list = []
 sentiment_label_list = []
 
-for i in df_reelgood['remove_lower_punct'].values.tolist():
+for i in df_reviews['remove_lower_punct'].values.tolist():
     sentiment_score = analyser.polarity_scores(i)
 
     if sentiment_score['compound'] >= 0.05:
@@ -52,25 +52,25 @@ for i in df_reelgood['remove_lower_punct'].values.tolist():
         sentiment_score_list.append(sentiment_score['compound'])
         sentiment_label_list.append('Negative')
     
-df_reelgood['sentiment'] = sentiment_label_list
-df_reelgood['sentiment score'] = sentiment_score_list
+df_reviews['sentiment'] = sentiment_label_list
+df_reviews['sentiment score'] = sentiment_score_list
 
 # 4. Tokenise string
-df_reelgood['tokenise'] = df_reelgood.apply(lambda row: nltk.word_tokenize(row[1]), axis=1)         # <apply> function to tokenize and <lambda> to find length of each text
+df_reviews['tokenise'] = df_reviews.apply(lambda row: nltk.word_tokenize(row[1]), axis=1)         # <apply> function to tokenize and <lambda> to find length of each text
 
 # 5. Initiate stopwords from nltk, add additional missing terms, and remove stopwords
 stop_words = stopwords.words(language_of_reviews)                       # there are 21 languages to use and you can check the options going to C:/Users/username/AppData/Roming/nltk_data/corpora/stopwords
 stop_words.extend(stop_words_list)                                      # to increase the stop_words list with the words we included in our file with that name
-df_reelgood['remove_stopwords'] = df_reelgood['tokenise'].apply(lambda x: [item for item in x if item not in stop_words])
+df_reviews['remove_stopwords'] = df_reviews['tokenise'].apply(lambda x: [item for item in x if item not in stop_words])
 
 # 6. Initiate nltk Lemmatiser and Lemmatise words
 wordnet_lemmatizer = WordNetLemmatizer()
-df_reelgood['lemmatise'] = df_reelgood['remove_stopwords'].apply(lambda x: [wordnet_lemmatizer.lemmatize(y) for y in x])
+df_reviews['lemmatise'] = df_reviews['remove_stopwords'].apply(lambda x: [wordnet_lemmatizer.lemmatize(y) for y in x])
 
 # 7. Initialize the count vectorizer and join the processed data to be a vectorised
 vectorizer = CountVectorizer(analyzer = 'word', ngram_range = (2, 2))       # convert a collection of text documents to a matrix of token counts
 vectors = []
-for index, row in df_reelgood.iterrows():
+for index, row in df_reviews.iterrows():
     vectors.append(", ".join(row[6]))
 vectorised = vectorizer.fit_transform(vectors)
 
@@ -85,31 +85,31 @@ lda_output = lda_model.fit_transform(vectorised)
 
 topic_names = ["Topic" + str(i) for i in range(1, lda_model.n_components + 1)]      # col names
 
-df_reelgood_document_topic = pd.DataFrame(np.round(lda_output, 2), columns = topic_names)
+df_reviews_document_topic = pd.DataFrame(np.round(lda_output, 2), columns = topic_names)
 
 # 9. Get dominant topic for each document and join to original df
-dominant_topic = (np.argmax(df_reelgood_document_topic.values, axis=1)+1)
-df_reelgood_document_topic['Dominant_topic'] = dominant_topic
+dominant_topic = (np.argmax(df_reviews_document_topic.values, axis=1)+1)
+df_reviews_document_topic['Dominant_topic'] = dominant_topic
 
-df_reelgood = df_reelgood.reset_index()             # reset index to do a proper merge between the 2 df
-df_reelgood = pd.merge(df_reelgood, df_reelgood_document_topic, left_index = True, right_index = True, how = 'outer')
+df_reviews = df_reviews.reset_index()             # reset index to do a proper merge between the 2 df
+df_reviews = pd.merge(df_reviews, df_reviews_document_topic, left_index = True, right_index = True, how = 'outer')
 
 # 10. Keywords the LDA extracted from such reviews
-docnames = ['Doc' + str(i) for i in range(len(df_reviews[df_reviews['App_Name']==app_name]))]                     # index names (one doc per row)
-df_reelgood_document_topic = pd.DataFrame(np.round(lda_output, 2), columns=topic_names, index=docnames)             # make the df of docs
+docnames = ['Doc' + str(i) for i in range(len(df_reviews))]                     # index names (one doc per row)
+df_reviews_document_topic = pd.DataFrame(np.round(lda_output, 2), columns=topic_names, index=docnames)             # make the df of docs
 
 
-dominant_topic = np.argmax(df_reelgood_document_topic.values, axis=1)           # get dominant topic position for each document (0 is Topic1, 1 is Topic2, and so on)
-df_reelgood_document_topic['dominant_topic'] = dominant_topic
+dominant_topic = np.argmax(df_reviews_document_topic.values, axis=1)           # get dominant topic position for each document (0 is Topic1, 1 is Topic2, and so on)
+df_reviews_document_topic['dominant_topic'] = dominant_topic
 
-df_reelgood_topic_keywords = pd.DataFrame(lda_model.components_)                # topic-keyword Matrix
+df_reviews_topic_keywords = pd.DataFrame(lda_model.components_)                # topic-keyword Matrix
 
 
-df_reelgood_topic_keywords.columns = vectorizer.get_feature_names()             # assign Column and Index
-df_reelgood_topic_keywords.index = topic_names
+df_reviews_topic_keywords.columns = vectorizer.get_feature_names()             # assign Column and Index
+df_reviews_topic_keywords.index = topic_names
 
-df_topic_no = pd.DataFrame(df_reelgood_topic_keywords.idxmax())
-df_scores = pd.DataFrame(df_reelgood_topic_keywords.max())
+df_topic_no = pd.DataFrame(df_reviews_topic_keywords.idxmax())
+df_scores = pd.DataFrame(df_reviews_topic_keywords.max())
 
 tmp = pd.merge(df_topic_no, df_scores, left_index=True, right_index=True)
 tmp.columns = ['topic', 'relevance_score']
@@ -135,8 +135,12 @@ all_topics['topic_name'] = all_topics['topic_name'].str.split('[').str[1]
 all_topics['topic_name'] = all_topics['topic_name'].str.split(']').str[0]           # this and previous line is to get the string between the [ ] symbols
 
 # 12. Results
-results = df_reelgood.groupby(['Dominant_topic', 'sentiment']).count().reset_index()
+results = df_reviews.groupby(['Dominant_topic', 'sentiment']).count().reset_index()
 results = pd.merge(results, all_topics, on='Dominant_topic', how='inner')
+
+reviews = pd.merge(df_reviews, all_topics, on='Dominant_topic', how='inner')
+reviews.rename(columns = {'topic_name':'aspect'}, inplace = True)
+reviews = reviews[['reviews', 'sentiment', 'sentiment score', 'aspect']]
 
 # table in nominal values
 aspect_based_table_val = pd.crosstab(results.sentiment,                 # index
@@ -163,6 +167,9 @@ format1 = workbook.add_format({'num_format': '#,##0'})              # format num
 format2 = workbook.add_format({'num_format': '0%'})                 # format percentages for df output
 center = workbook.add_format({'align': 'center'})                   # format cells to be aligned to the center
 
+worksheet_index = workbook.add_worksheet('Index')                   # this sheet is to help the user navigate the output file
+worksheet_index.hide_gridlines(option=2)
+
 aspect_based_table_pct.to_excel(writer, sheet_name = 'Analysis', startrow = 1, startcol = 1)        # data in percentages
 aspect_based_table_val.to_excel(writer, sheet_name = 'Analysis', startrow = 6, startcol = 1)        # data in nominal values
 worksheet_absa = writer.sheets['Analysis']
@@ -185,6 +192,11 @@ chart_sent.add_series({
     'categories': ['Analysis', 2, 1, 4, 1],                     # [sheetname, first_row, first_col, last_row, last_col]
     'values': ['Analysis', 2, features+2, 4, features+2],       # using features variable so it changes depending on how many features the user selects
     'data_labels': {'value': True, 'num_format': '0%'},
+    'points': [
+        {'fill': {'color': '#FF6969'}},                         # light red
+        {'fill': {'color': '#4F81BD'}},                         # blue accent 1
+        {'fill': {'color': '#9BBB59'}},                         # light olive green
+        ],
     'gap': 20,
 })
 chart_sent.set_title({'name': 'Sentiment Analysis (%)'})                     
@@ -200,6 +212,7 @@ chart_absa.add_series({
     'values': ['Analysis', 2, 2, 2, 1+features],
     'name': 'Negative',
     'data_labels': {'value': True, 'num_format': '0%'},
+    'fill': {'color': '#FF6969'},                         # light red
     'gap': 20,
 })
 chart_absa.add_series({
@@ -207,6 +220,7 @@ chart_absa.add_series({
     'values': ['Analysis', 3, 2, 3, 1+features],
     'name': 'Neutral',
     'data_labels': {'value': True, 'num_format': '0%'},
+    'fill': {'color': '#4F81BD'},                         # blue accent 1
     'gap': 20,
 })
 chart_absa.add_series({
@@ -214,6 +228,7 @@ chart_absa.add_series({
     'values': ['Analysis', 4, 2, 4, 1+features],
     'name': 'Positive',
     'data_labels': {'value': True, 'num_format': '0%'},
+    'fill': {'color': '#9BBB59'},                         # light olive green
     'gap': 20,
 })
 
@@ -223,6 +238,30 @@ chart_absa.set_x_axis({'major_gridlines': {'visible': False},})
 chart_absa.set_y_axis({'major_gridlines': {'visible': False}, 'visible': False})
 chart_absa.set_size({'width': 1080, 'height': 288})
 worksheet_absa.insert_chart('B28', chart_absa)
+
+text_for_index = """
+Dear data-driven friend,\n 
+Thank you for using our app! Here are some things to help you maximize your insights.\n 
+The {} most popular aspects of your product are: {}.\n 
+In the Analysis sheet, you can see the sentiment of your users towards your product and specifically, towards aspects of your product. Sentiments are feelings that include emotions, attitudes, and opinions about your product. \n 
+The 2 tables you will find there show the sentiment towards each aspect and to the product as a total, first in relative values (percentages) and then in nominal values. You will also find 2 charts to visualize this information. \n 
+In the last sheet called Reviews, you have the sentiment score assigned to each of the reviews in case you want to go deeper in the analysis of a specific aspect of your product. \n 
+Have fun!
+""".format(features, all_topics['topic_name'].values.tolist())
+options_for_textbox = {
+    'width': 655,
+    'height': 570,
+    'x_offset': 5,
+    'y_offset': 5,
+
+    'font': {'color': 'black',
+             'size': 14},
+    'align': {'horizontal': 'left'},
+    'gradient': {'colors': ['#DDEBCF',
+                            '#9CB86E']},
+}
+
+worksheet_index.insert_textbox('B1', text_for_index, options_for_textbox)
                  
-df_reelgood.to_excel(writer, sheet_name = 'Reviews')
+reviews.to_excel(writer, sheet_name = 'Reviews')
 writer.save()                                                       # close the pandas Excel writer and output the Excel file
