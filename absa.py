@@ -257,8 +257,6 @@ options_for_textbox = {
     'font': {'color': 'black',
              'size': 14},
     'align': {'horizontal': 'left'},
-    'gradient': {'colors': ['#DDEBCF',
-                            '#9CB86E']},
 }
 
 worksheet_index.insert_textbox('B1', text_for_index, options_for_textbox)
