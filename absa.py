@@ -264,4 +264,7 @@ options_for_textbox = {
 worksheet_index.insert_textbox('B1', text_for_index, options_for_textbox)
                  
 reviews.to_excel(writer, sheet_name = 'Reviews')
+worksheet_reviews = writer.sheets['Reviews']
+worksheet_reviews.set_column('C:E', 13, center)
+worksheet_reviews.set_column('B:B', 13)
 writer.save()                                                       # close the pandas Excel writer and output the Excel file
