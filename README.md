@@ -25,7 +25,7 @@ We are using a small dataset of 3.150 reviews but you can use a much larger one.
 1) Install all files that are in demo_gh folder to your project's folder: stop_words_list.py, absa.py, requirements.txt, and reviews.csv. Do not install Alexa.xlsx to your project folder because I provided this file only so you can see how the output file should look like.
 2) Go to your terminal and type: pip install -r requirements.txt
 This will install all necessary libraries such as nltk (natural language toolkit) and scikit-learn (ML library). Make sure you are in a virtual environment before installing the requirement packages. If you don't understand what a virtual environment is, read the explanation at the end of this file.
-3) Check that your data structure is similar to the one provided in this project called reviews.csv. If not, make necessary changes.
+3) Check that your data structure is similar to the one provided in this project called reviews.csv. If not, make necessary changes. Also, eliminate all rows that don't contain written reviews.
 4) Open the absa.py file in your IDE and follow the steps. You will need to complete 4 settings to match your data, which are app_name, aspects_no, reviews_name_col, and language_of_reviews.  
 5) Run the absa.py file typing in your terminal: py absa.py
 6) Go to your folder and open the Excel file with the name of your product/app to get insights from your analysis. Make sure you assign correctly the feature keywords with the dominant topics extracted with this technique (sheet name Topics_key).
